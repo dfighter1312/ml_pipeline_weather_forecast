@@ -1,5 +1,6 @@
 from core.model.base_model import BaseModel
 import tensorflow as tf
+import wandb
 
 class MLP(BaseModel):
 
@@ -19,6 +20,12 @@ class MLP(BaseModel):
                         optimizer=tf.optimizers.Adam())
 
         self.mlp.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val, verbose=0,
-                        callbacks=[self.__C.early_stopping, self.__C.model_checkpoint])
+                        callbacks=self.__C.callbacks)
+        
+        if self.__C.wandb:
+            wandb.log({
+                'train_loss': self.mlp.evaluate(X_train),
+                'val_loss': self.mlp.evaluate(X_val)
+            })
 
         self.mlp.save(self.__C.CKPTS_PATH + self.__C.MODEL)

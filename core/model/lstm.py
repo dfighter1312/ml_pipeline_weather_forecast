@@ -17,6 +17,6 @@ class LSTM(BaseModel):
                         optimizer=tf.optimizers.Adam())
 
         self.lstm.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val, verbose=0,
-                        callbacks=[self.__C.early_stopping, self.__C.model_checkpoint])
+                        callbacks=self.__C.callbacks)
 
         self.lstm.save(self.__C.CKPTS_PATH + self.__C.MODEL)

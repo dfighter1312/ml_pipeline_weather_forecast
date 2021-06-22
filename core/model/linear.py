@@ -1,5 +1,6 @@
 from core.model.base_model import BaseModel
 import tensorflow as tf
+import wandb
 
 class Linear(BaseModel):
 
@@ -13,10 +14,15 @@ class Linear(BaseModel):
                             ])
 
     def compile_and_fit(self, X_train, X_val):
+        
         self.linear.compile(loss=tf.losses.MeanSquaredError(),
-                        optimizer=tf.optimizers.Adam())
+                        optimizer=tf.optimizers.Adam(learning_rate=self.__C.LEARNING_RATE))
 
-        self.linear.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val, verbose=0,
-                        callbacks=[self.__C.early_stopping, self.__C.model_checkpoint])
-
+        self.linear.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val,
+                        callbacks=self.__C.callbacks)
+        if self.__C.wandb:
+            wandb.log({
+                'train_loss': self.linear.evaluate(X_train),
+                'val_loss': self.linear.evaluate(X_val)
+            })
         self.linear.save(self.__C.CKPTS_PATH + self.__C.MODEL)

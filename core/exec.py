@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import datetime
 import tensorflow as tf
+import wandb
+from wandb.keras import WandbCallback
 from core.utils.train_test_split import train_test_split
 from core.data.dataset import Dataset
 from core.data.window import WindowGenerator
@@ -16,6 +18,8 @@ class Execution():
     def __init__(self, __C):
         self.__C = __C
         self.dataset = Dataset(self.__C)
+        if __C.wandb:
+            wandb.init(reinit=True, project='weather-forecast')
     
     def train(self):
         
@@ -51,8 +55,7 @@ class Execution():
                                                               save_weights_only=True,
                                                               save_best_only=True)
 
-        setattr(self.__C, 'early_stopping', early_stopping)
-        setattr(self.__C, 'model_checkpoint', model_checkpoint)
+        setattr(self.__C, 'callbacks', [early_stopping, model_checkpoint])
 
         model = self.select_model()
 

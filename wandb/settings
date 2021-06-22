@@ -1,0 +1,5 @@
+[default]
+entity = dungdore1312
+project = weather-forecast
+base_url = https://api.wandb.ai
+
