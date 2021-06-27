@@ -47,5 +47,5 @@ def processing(df):
     df['No rain'] = rain == 0
     df['Light rain'] = (rain < (2.5 / 6)) & (rain > 0)
     df['Moderate/Heavy/Violent rain'] = (rain >= (2.5 / 6))
-    
+
     return df

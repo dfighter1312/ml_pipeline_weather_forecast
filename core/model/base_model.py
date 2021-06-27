@@ -7,7 +7,7 @@ class BaseModel(ABC):
     def __init__(self):
         """
         Initialization
-        
+
         Args:
         -------
             __C: Configs

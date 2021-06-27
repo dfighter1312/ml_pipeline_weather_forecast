@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 
+
 class Standardization():
 
     def __init__(self, __C):
@@ -13,7 +14,7 @@ class Standardization():
                 saved_dict = json.loads(fp.read())
                 self.mean = pd.Series(saved_dict['mean'])
                 self.std = pd.Series(saved_dict['std'])
-    
+
     def fit(self, X):
         self.mean = X.mean()
         self.std = X.std()
@@ -27,15 +28,15 @@ class Standardization():
 
         with open(os.path.join('./ckpts', 'std.json'), 'w') as fp:
             json.dump(save_dict, fp)
-        
+
     def transform(self, X):
         return (X - self.mean) / self.std
-    
+
     def inverse_transform(self, X, label_columns=None):
         if label_columns is None:
             label_columns = self.mean.columns
         return X * self.std[label_columns].to_numpy() + self.mean[label_columns].to_numpy()
-    
+
     def fit_transform(self, X):
         self.fit(X)
         return self.transform(X)
