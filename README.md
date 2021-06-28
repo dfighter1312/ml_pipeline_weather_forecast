@@ -28,7 +28,7 @@
 pip install wandb
 wandb login
 ```
-- Create a `.yaml` file. (One has been created in `./wandb/sweep_cfgs/sweep_mlp.yaml`)
+- Create a `.yaml` file. (One has been created in `sweep_mlp.yaml` or `sweep_linear.yaml`)
 - Create a sweep.
 ```
 wandb sweep .\wandb\sweep_cfgs\sweep_mlp.yaml
