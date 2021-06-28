@@ -8,9 +8,10 @@ class Standardization():
 
     def __init__(self, __C):
         self.__C = __C
+        self.file_name = 'std.json'
 
         if self.__C.RUN_MODE == 'test':
-            with open('./ckpts/std.json', 'r') as fp:
+            with open(os.path.join(self.__C.CKPTS_PATH, self.file_name), 'r') as fp:
                 saved_dict = json.loads(fp.read())
                 self.mean = pd.Series(saved_dict['mean'])
                 self.std = pd.Series(saved_dict['std'])
@@ -26,7 +27,7 @@ class Standardization():
             'std': self.std.to_dict(),
         }
 
-        with open(os.path.join('./ckpts', 'std.json'), 'w') as fp:
+        with open(os.path.join(self.__C.CKPTS_PATH, self.file_name), 'w') as fp:
             json.dump(save_dict, fp)
 
     def transform(self, X):

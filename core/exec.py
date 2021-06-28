@@ -5,12 +5,10 @@ import pandas as pd
 import tensorflow as tf
 import wandb
 from core.utils.train_test_split import train_test_split
-from core.data.dataset import Dataset
+from core.data.dataset import JenaDataset
 from core.data.window import WindowGenerator
 from core.utils.standardize import Standardization
-from core.model.linear import Linear
-from core.model.lstm import LSTM
-from core.model.mlp import MLP
+from core.model.factory import Factory
 
 
 class Execution():
@@ -18,14 +16,19 @@ class Execution():
 
     def __init__(self, __C):
         self.__C = __C
-        self.dataset = Dataset(self.__C)
+        self.dataset = JenaDataset(self.__C)
         if __C.wandb:
             wandb.init(reinit=True, project='weather-forecast')
 
+    def run(self, run_mode):
+        """Take run mode from choosen RUN argument."""
+        if run_mode == 'train':
+            self.train()
+        elif run_mode == 'test':
+            self.test()
+
     def train(self):
         """Train the data."""
-
-        self.dataset.preprocess()
 
         # Split the dataset into training set, validation set and test set
         train_df, val_df, test_df = train_test_split(self.dataset.df)
@@ -45,30 +48,35 @@ class Execution():
                                  train_df=train_df, test_df=test_df,
                                  val_df=val_df)
 
-        path_checkpoint = self.__C.CKPTS_PATH + 'model_checkpoint.h5'
+        model = Factory(self.__C)
 
         early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                           patience=self.__C.PATIENCE,
                                                           mode='min')
 
         model_checkpoint = tf.keras.callbacks.ModelCheckpoint(monitor="val_loss",
-                                                              filepath=path_checkpoint,
+                                                              filepath=self.__C.CKPTS_FILE,
                                                               verbose=0,
                                                               save_weights_only=True,
                                                               save_best_only=True)
 
-        setattr(self.__C, 'callbacks', [early_stopping, model_checkpoint])
-
-        model = self.select_model()
-
-        model.compile_and_fit(window.train, window.val)
+        model.compile(loss=tf.losses.MeanSquaredError(),
+                      optimizer=tf.optimizers.Adam())
+        model.fit(window.train, window.val, callbacks=[
+                  early_stopping, model_checkpoint])
 
     def test(self):
         """Predict new data."""
-        self.dataset.preprocess()
 
-        model = tf.keras.models.load_model(
-            self.__C.CKPTS_PATH + self.__C.MODEL)
+        model_path = (self.__C.MODEL + '_' + str(self.__C.N_HISTORY_DATA) +
+                      '_' + str(self.__C.N_PREDICT_DATA))
+        if model_path not in os.listdir(self.__C.CKPTS_PATH):
+            raise Exception("""
+                You have not train the module with this configuration.
+                Train a model or change your configuration.
+                """)
+
+        model = tf.keras.models.load_model(self.__C.CKPTS_PATH + model_path)
 
         if self.dataset.df.shape[0] < self.__C.N_HISTORY_DATA:
             raise Exception(
@@ -78,6 +86,7 @@ class Execution():
         # Standardize the data
         standard = Standardization(self.__C)
         X_new = standard.transform(self.dataset.df)
+        # When predict data has more row than history data
         X_new = X_new[-self.__C.N_HISTORY_DATA:]
 
         # Change into tensor dataset and make prediction
@@ -88,33 +97,38 @@ class Execution():
         X_pred = standard.inverse_transform(
             prediction.numpy()[0, :, :], self.__C.LABEL_COLUMNS)
 
+        self.export(X_pred)
+
+    def export(self, X_pred):
+        """
+        Export predict result to .csv file.
+        """
+        # Label the indices
+        # Take the last index to begin labeling future index
         last = self.dataset.df.index[-1]
         indices = []
 
         for i in range(self.__C.N_PREDICT_DATA):
             indices.append(last + datetime.timedelta(minutes=10*i))
 
-        df_pred = pd.DataFrame(
-            X_pred, columns=self.__C.LABEL_COLUMNS, index=indices)
+        df_pred = pd.DataFrame(X_pred, columns=self.__C.LABEL_COLUMNS)
 
-        name, tag = self.__C.TEST_FILENAME.split('.')
+        df_pred['Date Time'] = indices
+        df_pred['Date Time'] = df_pred['Date Time'].dt.strftime(
+            "%Y-%m-%d %H:%M:%S")
+        df_pred.set_index('Date Time', inplace=True)
+        name, _ = self.__C.TEST_FILENAME.split('.')
 
-        df_pred.to_csv(os.path.join(
-            self.__C.PRED_PATH, f'{name}_{self.__C.MODEL}_pred.{tag}'), index_label='Date Time')
-
-    def select_model(self):
-        """Select the model base on the choice in configuration file."""
-        if self.__C.MODEL == 'linear':
-            return Linear(self.__C)
-        if self.__C.MODEL == 'lstm':
-            return LSTM(self.__C)
-        if self.__C.MODEL == 'mlp':
-            return MLP(self.__C)
-        raise ValueError(f'No model name {self.__C.MODEL} is implemented')
-
-    def run(self, run_mode):
-        """Take run mode from choosen RUN argument."""
-        if run_mode == 'train':
-            self.train()
-        elif run_mode == 'test':
-            self.test()
+        if self.__C.EXPORT_MODE == 'csv':
+            df_pred.to_csv(os.path.join(
+                self.__C.PRED_PATH,
+                f'{name}_{self.__C.MODEL}_{self.__C.N_HISTORY_DATA}_{self.__C.N_PREDICT_DATA}_pred.{self.__C.EXPORT_MODE}'),
+                index_label='Date Time'
+            )
+        elif self.__C.EXPORT_MODE == 'json':
+            df_pred.to_json(os.path.join(
+                self.__C.PRED_PATH,
+                f'{name}_{self.__C.MODEL}_{self.__C.N_HISTORY_DATA}_{self.__C.N_PREDICT_DATA}_pred.{self.__C.EXPORT_MODE}'),
+                orient='index',
+                indent=4
+            )

@@ -15,7 +15,6 @@ class PATH:
         
         if 'pred' not in os.listdir('./results'):
             os.mkdir(f'./results/pred')
-        
 
         if 'ckpts' not in os.listdir('./'):
             os.mkdir('./ckpts')
@@ -27,6 +26,8 @@ class PATH:
             'train': self.DATASET_PATH + self.TRAIN_FILENAME,
             'test': self.DATASET_PATH + self.TEST_FILENAME
         }
+
+        self.CKPTS_FILE = self.CKPTS_PATH + 'model_checkpoint.h5'
 
     def check_path(self):
         """Check whether the dataset is appear."""

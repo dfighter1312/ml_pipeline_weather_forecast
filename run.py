@@ -20,8 +20,11 @@ def parse_args():
     parser.add_argument("--LAYER_1_UNITS", type=int, default=8)
     parser.add_argument("--LAYER_2_UNITS", type=int, default=8)
     parser.add_argument("--LSTM_UNITS", type=int, default=8)
-    parser.add_argument("--PATIENCE", type=int, default=3)
+    parser.add_argument("--PATIENCE", type=int, default=2)
     parser.add_argument("--LEARNING_RATE", type=float, default=0.001)
+    parser.add_argument("--N_HISTORY_DATA", type=int, default=18)
+    parser.add_argument("--N_PREDICT_DATA", type=int, default=6)
+    parser.add_argument("--EXPORT_MODE", type=str, default='csv')
     parser.add_argument("--wandb", type=bool, default=False)
 
     args = parser.parse_args()
@@ -31,7 +34,7 @@ def parse_args():
 if __name__ == '__main__':
 
     __C = Configs()
-
+    print(parse_args())
     args_dict = __C.parse_to_dict(parse_args())
     __C.add_args(args_dict)
     __C.proc()

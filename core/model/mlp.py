@@ -8,7 +8,7 @@ class MLP(BaseModel):
     def __init__(self, __C):
         self.__C = __C
 
-        self.mlp = tf.keras.Sequential([
+        self.model = tf.keras.Sequential([
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(
                 units=self.__C.LAYER_1_UNITS, activation='relu'),
@@ -20,17 +20,29 @@ class MLP(BaseModel):
                 [self.__C.N_PREDICT_DATA, self.__C.N_FEATURES]),
         ])
 
-    def compile_and_fit(self, X_train, X_val):
-        self.mlp.compile(loss=tf.losses.MeanSquaredError(),
-                         optimizer=tf.optimizers.Adam())
+    def compile(self, loss, optimizer):
 
-        self.mlp.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val, verbose=0,
-                     callbacks=self.__C.callbacks)
+        self.model.compile(loss=loss,
+                            optimizer=optimizer)
+
+    def fit(self, X_train, X_val, callbacks):
+
+        self.model.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val,
+                        callbacks=callbacks)
 
         if self.__C.wandb:
-            wandb.log({
-                'train_loss': self.mlp.evaluate(X_train),
-                'val_loss': self.mlp.evaluate(X_val)
-            })
+            train_loss = self.model.evaluate(X_train)
+            val_loss = self.model.evaluate(X_val)
+            self._wandb_save(train_loss, val_loss)
+        
+        self._save_model()
 
-        self.mlp.save(self.__C.CKPTS_PATH + self.__C.MODEL)
+    def _wandb_save(self, train_loss, val_loss):
+        wandb.log({
+                'train_loss': train_loss,
+                'val_loss': val_loss
+        })
+
+    def _save_model(self):        
+        self.model.save(self.__C.CKPTS_PATH + self.__C.MODEL + '_' + 
+                        str(self.__C.N_HISTORY_DATA) + '_' + str(self.__C.N_PREDICT_DATA))

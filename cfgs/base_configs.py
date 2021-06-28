@@ -1,5 +1,3 @@
-import os
-import random
 from types import MethodType
 from cfgs.path_configs import PATH
 
@@ -14,28 +12,32 @@ class Configs(PATH):
     def init_params(self):
         """Initialize parameters for all models."""
         
-        # self.MODEL = 'linear'
+        self.MODEL = 'linear'
 
         self.N_HISTORY_DATA = 18
 
         self.N_PREDICT_DATA = 6
 
-        # self.LABEL_COLUMNS = ['T (degC)', 'p (mbar)', 'sh (g/kg)']
-        # self.N_FEATURES = len(self.LABEL_COLUMNS)
+        self.LABEL_COLUMNS = ['T (degC)', 'p (mbar)', 'sh (g/kg)']
 
-        # self.MAX_EPOCHS = 10
+        self.MAX_EPOCHS = 10
 
-        # self.PATIENCE = 3
+        self.PATIENCE = 3
 
-        # # Linear config
-        # self.L1_REGULARIZE = 0.01
+        self.EXPORT_MODE = 'csv'
 
-        # # MLP config
-        # self.LAYER_1_UNITS = 8
-        # self.LAYER_2_UNITS = 8
+        self.wandb = False
 
-        # # LSTM config
-        # self.LSTM_UNITS = 8
+        # Linear config
+        self.L1_REGULARIZE = 0.01
+
+        # MLP config
+        self.LAYER_1_UNITS = 8
+        
+        self.LAYER_2_UNITS = 8
+
+        # LSTM config
+        self.LSTM_UNITS = 8
 
     def parse_to_dict(self, args):
         args_dict = {}
@@ -43,7 +45,6 @@ class Configs(PATH):
             if not arg.startswith('__') and not isinstance(getattr(args, arg), MethodType):
                 if getattr(args, arg) is not None:
                     args_dict[arg] = getattr(args, arg)
-        args_dict["N_FEATURES"] = len(args_dict["LABEL_COLUMNS"])
         return args_dict
 
     def add_args(self, args_dict):
@@ -51,6 +52,7 @@ class Configs(PATH):
             setattr(self, arg, args_dict[arg])
 
     def proc(self):
+        self.N_FEATURES = len(self.LABEL_COLUMNS)
         assert self.RUN_MODE in ['train', 'test']
 
 
