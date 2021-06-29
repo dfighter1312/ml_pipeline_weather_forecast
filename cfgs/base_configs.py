@@ -14,11 +14,13 @@ class Configs(PATH):
         
         self.MODEL = 'linear'
 
+        self.DATA_CLASS = 'jena'
+
         self.N_HISTORY_DATA = 18
 
         self.N_PREDICT_DATA = 6
 
-        self.LABEL_COLUMNS = ['T (degC)', 'p (mbar)', 'sh (g/kg)']
+        self.LABEL_COLUMNS = [0, 1]
 
         self.MAX_EPOCHS = 10
 
@@ -37,7 +39,7 @@ class Configs(PATH):
         self.LAYER_2_UNITS = 8
 
         # LSTM config
-        self.LSTM_UNITS = 8
+        self.LSTM_UNITS = '8'
 
     def parse_to_dict(self, args):
         args_dict = {}
@@ -53,6 +55,7 @@ class Configs(PATH):
 
     def proc(self):
         self.N_FEATURES = len(self.LABEL_COLUMNS)
+        self.LSTM_UNITS = list(map(int, self.LSTM_UNITS.split(' ')))
         assert self.RUN_MODE in ['train', 'test']
 
 

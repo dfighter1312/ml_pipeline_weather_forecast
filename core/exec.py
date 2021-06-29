@@ -1,14 +1,14 @@
-import datetime
-import os
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 import wandb
-from core.utils.train_test_split import train_test_split
-from core.data.dataset import JenaDataset
+from core.data.jena import JenaDataset
+from core.data.bewaco import BewacoDataset
 from core.data.window import WindowGenerator
+from core.model.factory import ModelFactory
 from core.utils.standardize import Standardization
-from core.model.factory import Factory
+from core.utils.train_test_split import train_test_split
+from core.utils.os_settings import get_model_path
+from core.utils.export import export
 
 
 class Execution():
@@ -16,7 +16,11 @@ class Execution():
 
     def __init__(self, __C):
         self.__C = __C
-        self.dataset = JenaDataset(self.__C)
+        self.dataset = None
+        if __C.DATA_CLASS == 'jena':
+            self.dataset = JenaDataset(self.__C)
+        elif __C.DATA_CLASS == 'bewaco':
+            self.dataset = BewacoDataset(self.__C)
         if __C.wandb:
             wandb.init(reinit=True, project='weather-forecast')
 
@@ -38,17 +42,18 @@ class Execution():
         train_df = standard.fit_transform(train_df)
         val_df = standard.transform(val_df)
         test_df = standard.transform(test_df)
+        print(train_df, val_df, test_df)
 
         # Create window
         window = WindowGenerator(input_width=self.__C.N_HISTORY_DATA,
-                                 label_width=self.__C.N_PREDICT_DATA,
-                                 shift=self.__C.N_PREDICT_DATA,
-                                 label_columns=self.__C.LABEL_COLUMNS,
-                                 table_columns=self.dataset.df.columns,
-                                 train_df=train_df, test_df=test_df,
-                                 val_df=val_df)
+                                        label_width=self.__C.N_PREDICT_DATA,
+                                        shift=self.__C.N_PREDICT_DATA,
+                                        label_columns=self.dataset.get_str_label_columns(),
+                                        table_columns=self.dataset.get_columns(),
+                                        train_df=train_df, test_df=test_df,
+                                        val_df=val_df)
 
-        model = Factory(self.__C)
+        model = ModelFactory(self.__C)
 
         early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss',
                                                           patience=self.__C.PATIENCE,
@@ -68,67 +73,21 @@ class Execution():
     def test(self):
         """Predict new data."""
 
-        model_path = (self.__C.MODEL + '_' + str(self.__C.N_HISTORY_DATA) +
-                      '_' + str(self.__C.N_PREDICT_DATA))
-        if model_path not in os.listdir(self.__C.CKPTS_PATH):
-            raise Exception("""
-                You have not train the module with this configuration.
-                Train a model or change your configuration.
-                """)
+        model_path = (get_model_path(self.__C))
+        model = tf.keras.models.load_model(model_path)
 
-        model = tf.keras.models.load_model(self.__C.CKPTS_PATH + model_path)
-
-        if self.dataset.df.shape[0] < self.__C.N_HISTORY_DATA:
-            raise Exception(
-                f"""The provided dataset must have number of records greater or
-                equal to {self.__C.N_HISTORY_DATA}""")
+        self.dataset.set_predict_dataset()
 
         # Standardize the data
         standard = Standardization(self.__C)
-        X_new = standard.transform(self.dataset.df)
-        # When predict data has more row than history data
-        X_new = X_new[-self.__C.N_HISTORY_DATA:]
+        X = standard.transform(self.dataset.df)
 
         # Change into tensor dataset and make prediction
-        ds = tf.constant([np.array(X_new)])
+        ds = tf.constant([np.array(X)])
         prediction = model(ds)
 
         # Inverse transform to get the real value
         X_pred = standard.inverse_transform(
             prediction.numpy()[0, :, :], self.__C.LABEL_COLUMNS)
 
-        self.export(X_pred)
-
-    def export(self, X_pred):
-        """
-        Export predict result to .csv file.
-        """
-        # Label the indices
-        # Take the last index to begin labeling future index
-        last = self.dataset.df.index[-1]
-        indices = []
-
-        for i in range(self.__C.N_PREDICT_DATA):
-            indices.append(last + datetime.timedelta(minutes=10*i))
-
-        df_pred = pd.DataFrame(X_pred, columns=self.__C.LABEL_COLUMNS)
-
-        df_pred['Date Time'] = indices
-        df_pred['Date Time'] = df_pred['Date Time'].dt.strftime(
-            "%Y-%m-%d %H:%M:%S")
-        df_pred.set_index('Date Time', inplace=True)
-        name, _ = self.__C.TEST_FILENAME.split('.')
-
-        if self.__C.EXPORT_MODE == 'csv':
-            df_pred.to_csv(os.path.join(
-                self.__C.PRED_PATH,
-                f'{name}_{self.__C.MODEL}_{self.__C.N_HISTORY_DATA}_{self.__C.N_PREDICT_DATA}_pred.{self.__C.EXPORT_MODE}'),
-                index_label='Date Time'
-            )
-        elif self.__C.EXPORT_MODE == 'json':
-            df_pred.to_json(os.path.join(
-                self.__C.PRED_PATH,
-                f'{name}_{self.__C.MODEL}_{self.__C.N_HISTORY_DATA}_{self.__C.N_PREDICT_DATA}_pred.{self.__C.EXPORT_MODE}'),
-                orient='index',
-                indent=4
-            )
+        export(self.__C, self.dataset, X_pred)

@@ -31,7 +31,7 @@ wandb login
 - Create a `.yaml` file. (One has been created in `sweep_mlp.yaml` or `sweep_linear.yaml`)
 - Create a sweep.
 ```
-wandb sweep .\wandb\sweep_cfgs\sweep_mlp.yaml
+wandb sweep sweep_mlp.yaml
 ```
 - Run sweep
 ```
@@ -53,9 +53,12 @@ wandb: Run sweep agent with: wandb agent dungdore1312/weather-forecast/qld8l3be
 *(The new data is located in `./datasets/real/export-reec56.BEWACO 2021.csv`)*
 
 ## Tasks for Week 4:
-- Running web server in Docker.
+- Running web server in Flask and Docker.
+- Apply model to new dataset.
 
 ### Tour guide for Week 4:
+**1. Running web server**
+
 - Install Docker Desktop.
 - Create a Dockerhub account and a repository within the account with name `<username>/ml_pipeline_weather_forecast`
 - Run
@@ -65,3 +68,13 @@ wandb: Run sweep agent with: wandb agent dungdore1312/weather-forecast/qld8l3be
 - Open a new terminal, and do the test for server by
 ```python tests/test_server.py```
 *You can modify the file to change settings*
+
+**2. Apply model to new dataset.**
+
+The new dataset is differentiate with the last one by data class. So if you want to perform model on the new one, simply run
+```python run.py --RUN <train or test> --DATA_CLASS bewaco```
+
+With the old one
+```python run.py --RUN <train or test> --DATA_CLASS jena```
+
+If `--DATA_CLASS` is left empty, default assignment is `jena` (the old one).

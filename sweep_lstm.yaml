@@ -1,0 +1,29 @@
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--wandb=True"
+  - ${args}
+program: run.py
+method: random
+metric:
+  goal: minimize
+  name: val_loss
+early_terminate:
+  type: hyperband
+  min_iter: 20
+parameters:
+  RUN:
+    value: train
+  MODEL:
+    value: lstm
+  DATA_CLASS:
+    value: bewaco
+  MAX_EPOCHS:
+    value: 50
+  LEARNING_RATE:
+    values: [0.1, 0.01, 0.001, 0.0003]
+  LSTM_UNITS:
+    values: [2, 4, 8, 16, 32, 2 2, 4 4]
+  PATIENCE:
+    value: 5

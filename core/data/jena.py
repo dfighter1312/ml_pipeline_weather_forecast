@@ -1,23 +1,40 @@
 import datetime
 import pandas as pd
 import numpy as np
+from core.data.base_dataset import BaseDataset
 
 
-class JenaDataset():
+class JenaDataset(BaseDataset):
 
     def __init__(self, __C):
         self.__C = __C
-        self.df = pd.read_csv(__C.DATA_PATH[__C.RUN_MODE], encoding="ISO-8859-1",
-                           index_col='Date Time', parse_dates=['Date Time'],
-                           dayfirst=True)
+        self.create_dataframe()
         self.preprocess()
 
-    def preprocess(self):
-        """
-        Perform preprocessing data for data preparation.
-        (Data cleaning and feature engineering).
-        """
+    def create_dataframe(self):
+        self.df = pd.read_csv(self.__C.DATA_PATH['jena'][self.__C.RUN_MODE], encoding="ISO-8859-1",
+                           index_col='Date Time', parse_dates=['Date Time'],
+                           dayfirst=True)
 
+    def get_columns(self):
+        return self.df.columns
+
+    def get_str_label_columns(self):
+        label_columns = self.__C.LABEL_COLUMNS
+
+        try:
+            for i, ele in enumerate(self.__C.LABEL_COLUMNS):
+                if isinstance(ele, int):
+                    label_columns[i] = self.get_columns()[i]
+        except IndexError:
+            print('You should check the LABEL_COLUMN input')
+
+        self.__C.LABEL_COLUMNS = label_columns
+
+        return label_columns
+
+
+    def preprocess(self):
         # Replace errornous data with forward fill
         self.df.replace(-9999, np.nan, inplace=True)
         self.df.fillna(method='ffill', inplace=True)
@@ -52,7 +69,16 @@ class JenaDataset():
 
         # Use binning for rain column
         rain = self.df.pop('rain (mm)')
-        # raining = self.df.pop('raining (s)')
         self.df['No rain'] = rain == 0
         self.df['Light rain'] = (rain < (2.5 / 6)) & (rain > 0)
         self.df['Moderate/Heavy/Violent rain'] = (rain >= (2.5 / 6))
+
+        self.df.pop('raining (s)')
+
+    def set_predict_dataset(self):
+        if self.df.shape[0] < self.__C.N_HISTORY_DATA:
+            raise Exception(
+                f"""The provided dataset must have number of records greater or
+                equal to {self.__C.N_HISTORY_DATA}""")
+        # When predict data has more row than history data, get the last N_HISTORY_DATA
+        self.df = self.df[-self.__C.N_HISTORY_DATA:]

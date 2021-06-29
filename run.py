@@ -13,13 +13,14 @@ def parse_args():
                         type=str, required=True)
 
     parser.add_argument("--MODEL", type=str, default="linear")
-    parser.add_argument("--LABEL_COLUMNS", type=list,
-                        default=['T (degC)', 'p (mbar)', 'sh (g/kg)'])
+    parser.add_argument("--DATA_CLASS", type=str, default="jena")
+    parser.add_argument("--LABEL_COLUMNS", type=int, nargs="*",
+                        default=[0, 1])
     parser.add_argument("--MAX_EPOCHS", type=int, default=10)
     parser.add_argument("--L1_REGULARIZE", type=float, default=0.01)
     parser.add_argument("--LAYER_1_UNITS", type=int, default=8)
     parser.add_argument("--LAYER_2_UNITS", type=int, default=8)
-    parser.add_argument("--LSTM_UNITS", type=int, default=8)
+    parser.add_argument("--LSTM_UNITS", type=str, default='8')
     parser.add_argument("--PATIENCE", type=int, default=2)
     parser.add_argument("--LEARNING_RATE", type=float, default=0.001)
     parser.add_argument("--N_HISTORY_DATA", type=int, default=18)

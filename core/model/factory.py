@@ -3,7 +3,7 @@ from core.model.lstm import LSTM
 from core.model.mlp import MLP
 
 
-def Factory(__C):
+def ModelFactory(__C):
     """
     Factory Method.
     Select the model base on the choice in configuration file.

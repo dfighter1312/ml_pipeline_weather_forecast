@@ -19,12 +19,15 @@ class PATH:
         if 'ckpts' not in os.listdir('./'):
             os.mkdir('./ckpts')
 
-        self.TRAIN_FILENAME = 'mpi_roof_2020a.csv'
-        self.TEST_FILENAME = 'mpi_roof_2020b.csv'
-
         self.DATA_PATH = {
-            'train': self.DATASET_PATH + self.TRAIN_FILENAME,
-            'test': self.DATASET_PATH + self.TEST_FILENAME
+            'jena': {
+                'train': self.DATASET_PATH + 'jena/mpi_roof_2020a.csv',
+                'test': self.DATASET_PATH + 'jena/mpi_roof_2020b.csv'
+            },
+            'bewaco': {
+                'train': self.DATASET_PATH + 'real/export-reec56.BEWACO 2021.csv',
+                'test': self.DATASET_PATH + 'real/export-reec56.BEWACO 2021.csv'
+            }
         }
 
         self.CKPTS_FILE = self.CKPTS_PATH + 'model_checkpoint.h5'

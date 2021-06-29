@@ -8,7 +8,7 @@ class Standardization():
 
     def __init__(self, __C):
         self.__C = __C
-        self.file_name = 'std.json'
+        self.file_name = 'std_' + __C.DATA_CLASS + '.json'
 
         if self.__C.RUN_MODE == 'test':
             with open(os.path.join(self.__C.CKPTS_PATH, self.file_name), 'r') as fp:

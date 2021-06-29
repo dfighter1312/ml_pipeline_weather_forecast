@@ -1,4 +1,4 @@
-def train_test_split(X, train_size=0.7, val_size=0.2):
+def train_test_split(X, train_size=0.7, val_size=0.3):
 
     n = len(X)
 

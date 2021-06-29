@@ -1,6 +1,5 @@
 from core.model.base_model import BaseModel
-import json
-import os
+from core.utils.os_settings import get_model_path
 import tensorflow as tf
 import wandb
 
@@ -18,12 +17,10 @@ class Linear(BaseModel):
         ])
     
     def compile(self, loss, optimizer):
-
         self.model.compile(loss=loss,
                             optimizer=optimizer)
 
     def fit(self, X_train, X_val, callbacks=None):
-
         self.model.fit(X_train, epochs=self.__C.MAX_EPOCHS, validation_data=X_val,
                         callbacks=callbacks)
 
@@ -40,6 +37,5 @@ class Linear(BaseModel):
                 'val_loss': val_loss
         })
 
-    def _save_model(self):        
-        self.model.save(self.__C.CKPTS_PATH + self.__C.MODEL + '_' + 
-                        str(self.__C.N_HISTORY_DATA) + '_' + str(self.__C.N_PREDICT_DATA))
+    def _save_model(self): 
+        self.model.save(get_model_path(self.__C, load=False))
