@@ -72,9 +72,13 @@ wandb: Run sweep agent with: wandb agent dungdore1312/weather-forecast/qld8l3be
 **2. Apply model to new dataset.**
 
 The new dataset is differentiate with the last one by data class. So if you want to perform model on the new one, simply run
-```python run.py --RUN <train or test> --DATA_CLASS bewaco```
+```
+python run.py --RUN <train or test> --DATA_CLASS bewaco
+```
 
 With the old one
-```python run.py --RUN <train or test> --DATA_CLASS jena```
+```
+python run.py --RUN <train or test> --DATA_CLASS jena
+```
 
 If `--DATA_CLASS` is left empty, default assignment is `jena` (the old one).
