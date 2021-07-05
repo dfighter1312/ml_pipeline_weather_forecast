@@ -1,0 +1,15 @@
+{
+    "pipeline": {
+      "name": "weather-forecast-pipeline"
+    },
+    "transform": {
+      "image": "ml_pipeline_weather_forecast:latest",
+      "cmd": ["python", "run.py", "--RUN", "train"]
+    }
+    // "input": {
+    //     "pfs": {
+    //       "repo": "data",
+    //       "glob": "/*"
+    //     }
+    // }
+  }
