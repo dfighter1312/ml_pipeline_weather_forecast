@@ -4,29 +4,31 @@ class PATH:
 
     def __init__(self):
 
-        self.DATASET_PATH = './datasets/'
-        self.PRED_PATH = './results/pred/'
-        self.CKPTS_PATH = './ckpts/'
+        self.TRAIN_PATH = '/pfs/input_train/'
+        self.TEST_PATH = '/pfs/input_test/'
+        self.PRED_PATH = '/pfs/out/result/'
+        self.CKPTS_PATH = '/pfs/out/ckpts/'
+        self.CKPTS_OUTPUT_PATH = '/pfs/model/ckpts/'
 
         self.init_path()
 
     def init_path(self):
         """Initialize the directory in case there are none.""" 
         
-        if 'pred' not in os.listdir('./results'):
-            os.mkdir(f'./results/pred')
+        if 'result' not in os.listdir('/pfs/out'):
+            os.mkdir('/pfs/out/result')
 
-        if 'ckpts' not in os.listdir('./'):
-            os.mkdir('./ckpts')
+        if 'ckpts' not in os.listdir('/pfs/out'):
+            os.mkdir('/pfs/out/ckpts')
 
         self.DATA_PATH = {
             'jena': {
-                'train': self.DATASET_PATH + 'jena/mpi_roof_2020a.csv',
-                'test': self.DATASET_PATH + 'jena/mpi_roof_2020b.csv'
+                'train': self.TRAIN_PATH + 'mpi_roof_2020a.csv',
+                'test': self.TEST_PATH + 'mpi_roof_2020b.csv'
             },
             'bewaco': {
-                'train': self.DATASET_PATH + 'real/export-reec56.BEWACO 2021.csv',
-                'test': self.DATASET_PATH + 'real/export-reec56.BEWACO 2021.csv'
+                'train': self.TRAIN_PATH + 'export-reec56.BEWACO 2021.csv',
+                'test': self.TEST_PATH + 'export-reec56.BEWACO 2021.csv'
             }
         }
 

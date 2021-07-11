@@ -1,0 +1,17 @@
+{
+  "pipeline": {
+    "name": "model"
+  },
+  "description": "Training datasets.",
+  "transform": {
+    "image": "dfighter1312/ml_pipeline_weather_forecast:master",
+    "cmd": ["python", "run.py", "--RUN", "train"]
+  },
+  "input": {
+    "pfs": {
+      "glob": "/*",
+      "repo": "input_train"
+   }
+  },
+  "enable_stats": true
+}

@@ -42,7 +42,6 @@ class Execution():
         train_df = standard.fit_transform(train_df)
         val_df = standard.transform(val_df)
         test_df = standard.transform(test_df)
-        print(train_df, val_df, test_df)
 
         # Create window
         window = WindowGenerator(input_width=self.__C.N_HISTORY_DATA,

@@ -1,0 +1,27 @@
+{
+    "pipeline": {
+      "name": "result"
+    },
+    "description": "Generate prediction.",
+    "transform": {
+      "image": "dfighter1312/ml_pipeline_weather_forecast:master",
+      "cmd": ["python", "run.py", "--RUN", "test"]
+    },
+    "input": {
+      "cross": [
+        {
+            "pfs": {
+                "glob": "/",
+                "repo": "input_test"
+            }
+        },
+        {
+            "pfs": {
+                "glob": "/",
+                "repo": "model"
+            }
+        }
+    ] 
+    },
+    "enable_stats": true
+  }

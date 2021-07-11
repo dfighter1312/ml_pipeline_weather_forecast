@@ -1,0 +1,10 @@
+{
+  "pipeline": {
+    "name": "host"
+  },
+  "description": "Running host.",
+  "transform": {
+    "image": "dfighter1312/ml_pipeline_weather_forecast:latest",
+    "cmd": ["docker", "run", "-p", "5000:5000", "dfighter1312/ml_pipeline_weather_forecast"]
+  }
+}

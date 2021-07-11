@@ -11,7 +11,7 @@ class Standardization():
         self.file_name = 'std_' + __C.DATA_CLASS + '.json'
 
         if self.__C.RUN_MODE == 'test':
-            with open(os.path.join(self.__C.CKPTS_PATH, self.file_name), 'r') as fp:
+            with open(os.path.join(self.__C.CKPTS_OUTPUT_PATH, self.file_name), 'r') as fp:
                 saved_dict = json.loads(fp.read())
                 self.mean = pd.Series(saved_dict['mean'])
                 self.std = pd.Series(saved_dict['std'])
