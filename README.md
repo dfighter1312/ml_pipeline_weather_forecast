@@ -1,84 +1,58 @@
 # Machine Learning Pipeline - Weather Forecast
 
-## Tasks for Week 1:
-- Build an algorithm to forecast weather data.
-- Data source: Max-Planck-Institut fuer Biogeochemie - Wetterdaten
-- Use at least one model in: MLP, LSTM, Linear Regression.
-- Things should be cover: Extract data, transform to a suitable format, use a simple algorithm to predict.
+## Tasks for Week 5:
+Learning Pachyderm
 
-### Tour guide for week 1:
-- Enter `./notebooks`
-- Please read `weather-forecast_explained-note.ipynb` to know how `weather-forecast_pipeline.ipynb` is constructed.
+### Tour guide for Week 5:
 
-## Tasks for Week 2:
-- Convert into `.py` with one entrypoint.
-- Perform *hyperparameter tuning*.
+This tour guide is for using Pachyderm Hub. If you want to get around locally, read the [Pachyderm documentation](https://docs.pachyderm.com/latest/getting_started/local_installation/)
 
-### Tour guide for Week 2:
-**1. Running all-in-one.**
-- Sample run:
-```python run.py --RUN train --N_HISTORY_DATA 10 --N_PREDICT_DATA 5 --MODEL mlp```
-- Sample test (must appear a model with same type and number of history/predict data to run a test):
-```python run.py --RUN test --N_HISTORY_DATA 10 --N_PREDICT_DATA 5 --MODEL mlp```
+**Prerequisite:**
+1. Create a Pachyderm hub account.
+2. Create a workspace (since we are using free account, choose *Create a 4-hr Workspace* option)
+3. [Install pachctl](https://docs.pachyderm.com/latest/getting_started/local_installation/#install-pachctl)
+4. Configure your Pachyderm context and login to your workspace by using a one-time authentication token.
 
-**2. Hyperparameter tuning**
-- Sign up for **Weight & Biases** via https://wandb.ai/site
-- Set up Wandb in your computer
+Details are described [here](https://docs.pachyderm.com/latest/hub/hub_getting_started/)
+
+**Running an example:**
+1. Create repo
 ```
-pip install wandb
-wandb login
+$ pachctl create repo input_train
+$ pachctl create repo input_test
 ```
-- Create a `.yaml` file. (One has been created in `sweep_mlp.yaml` or `sweep_linear.yaml`)
-- Create a sweep.
+The name of the repo (`input_train` and `input_test`) must be declare correctly since it is appear in `train.json` and `test.json` settings.
+
+2. Create pipeline
 ```
-wandb sweep sweep_mlp.yaml
-```
-- Run sweep
-```
-wandb agent <username>/<project_name>/<sweep_id>
-```
-There will be a command hint for you when you create a sweep like this:
-```
-wandb: Creating sweep from: .\wandb\sweep_cfgs\sweep_mlp.yaml
-wandb: Created sweep with ID: qld8l3be
-wandb: View sweep at: https://wandb.ai/dungdore1312/weather-forecast/sweeps/qld8l3be
-wandb: Run sweep agent with: wandb agent dungdore1312/weather-forecast/qld8l3be
+$ pachctl create pipeline -f train.json
+$ pachctl create pipeline -f test.json
 ```
 
-**NOTE:** Your API key is in https://wandb.ai/authorize after logging in.
-
-## Tasks for Week 3:
-- Perform EDA on new data. (found in `./notebook/eda-with-real-data.ipynb`)
-
-*(The new data is located in `./datasets/real/export-reec56.BEWACO 2021.csv`)*
-
-## Tasks for Week 4:
-- Running web server in Flask and Docker.
-- Apply model to new dataset.
-
-### Tour guide for Week 4:
-**1. Running web server**
-
-- Install Docker Desktop.
-- Create a Dockerhub account and a repository within the account with name `<username>/ml_pipeline_weather_forecast`
-- Run
-```docker build -t <username>/ml_pipeline_weather_forecast .```
-- When it's finished, you can run the server with
-```docker run -p 5000:5000 <username>/ml_pipeline_weather_forecast```
-- Open a new terminal, and do the test for server by
-```python tests/test_server.py```
-*You can modify the file to change settings*
-
-**2. Apply model to new dataset.**
-
-The new dataset is differentiate with the last one by data class. So if you want to perform model on the new one, simply run
+3. Add a data to `input_train` and `input_test`
 ```
-python run.py --RUN <train or test> --DATA_CLASS bewaco
+$ pachctl put file input_train@master:mpi_roof_2020a.csv -f https://raw.githubusercontent.com/dfighter1312/ml_pipeline_weather_forecast/main/datasets/jena/mpi_roof_2020a.csv
+$ pachctl put file input_train@master:mpi_roof_2020b.csv -f https://raw.githubusercontent.com/dfighter1312/ml_pipeline_weather_forecast/main/datasets/jena/mpi_roof_2020b.csv
 ```
+Everytime you add/change data in `input_train` repo, the pipeline `model` (and `result` if there is data in `input_test` repo) will automatically run and return a new branch/commit as a result. Similarly, `input_test` will influence to `result` pipeline. You can check the dashboard on Pachyderm hub in order to see the pipeline and how they affect to each other.
 
-With the old one
+4. (Optional) Do some checking
+- View the list of jobs that have started:
 ```
-python run.py --RUN <train or test> --DATA_CLASS jena
+$ pachctl list job
 ```
+- View list of file in repos:
+```
+$ pachctl list job <Choose 1 of input_train/input_test/model/result>
+```
+- View datum
+```
+$ pachctl list datum <job_id>
+```
+- Check error when datum failed:
+```
+pachctl inspect datum <job> <datum> [flags]
+```
+or you can check the log file in pipeline repo when the `enable_stats` value in `settings.json` is set to `True`.
 
-If `--DATA_CLASS` is left empty, default assignment is `jena` (the old one).
+The configuration can be varied based on your project requirements. Read carefully `settings.json` and take a deep look at [Pipeline Specification](https://docs.pachyderm.com/latest/reference/pipeline_spec/) to understand.
