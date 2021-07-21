@@ -82,3 +82,9 @@ python run.py --RUN <train or test> --DATA_CLASS jena
 ```
 
 If `--DATA_CLASS` is left empty, default assignment is `jena` (the old one).
+
+## Task for Week 5:
+- Running a simple pipeline using [Pachyderm](https://www.pachyderm.com/)
+
+### Tour guide for Week 5:
+- Checkout the `pachyderm` branch and read [documentation](https://github.com/dfighter1312/ml_pipeline_weather_forecast/tree/pachyderm) to see the tour guide.
