@@ -88,3 +88,9 @@ If `--DATA_CLASS` is left empty, default assignment is `jena` (the old one).
 
 ### Tour guide for Week 5:
 - Checkout the `pachyderm` branch and read [documentation](https://github.com/dfighter1312/ml_pipeline_weather_forecast/tree/pachyderm) to see the tour guide.
+
+## Task for Week 6:
+- Explore [Apache Airflow](https://airflow.apache.org/)
+
+### Tour guide for Week 6:
+- The [`airflow-learning`](https://github.com/dfighter1312/airflow-learning) repository is created for this task since it is currently impractical to implement to the current pipeline.
